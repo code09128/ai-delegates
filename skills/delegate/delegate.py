@@ -3,7 +3,9 @@ ai-delegates 共用執行器：把只讀的偵察任務派給外部 AI CLI（agy
 
     python delegate.py list
     python delegate.py ask <後端|auto> "問題" [路徑 ...] [--timeout 10m] [--model 名稱]
+    python delegate.py log [-n 20]
 
+- 每次 ask 都會在 ~/.ai-delegates/runs.jsonl 追加一行紀錄（時間、專案、後端、問題、結果、耗時、token）
 - 後端定義在 backends/*.json；使用者覆寫放在 ~/.ai-delegates/backends/*.json（同名欄位覆蓋，外掛更新不會蓋掉）
 - context="agent"：後端自己讀檔（必須有只讀保護，例如 agy headless 自動拒絕寫檔與指令）
 - context="packed"：後端不給任何檔案／指令工具，由這支程式讀好檔案（排除機密）放進問題
@@ -19,10 +21,13 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
+from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 USER_DIR = Path.home() / ".ai-delegates" / "backends"
+RUN_LOG = Path.home() / ".ai-delegates" / "runs.jsonl"
 
 EXCLUDE_DIRS = {".git", "node_modules", "dist", "build", "data", "logs", "secrets", "__pycache__", ".venv", "venv",
                 ".idea", ".vscode", ".claude", ".next", "coverage", ".mypy_cache", ".pytest_cache"}
@@ -195,7 +200,7 @@ def run(b: dict, question: str, targets, timeout: str, model):
 
 def parse_output(b: dict, r, out_file: Path, usage_file: Path):
     o = b.get("output", {"type": "text"})
-    info, denied, text, ok = [], [], "", r.returncode == 0
+    info, denied, text, ok, tokens, model = [], [], "", r.returncode == 0, None, None
     if o["type"] == "json":
         try:
             data = json.loads(r.stdout)
@@ -208,9 +213,9 @@ def parse_output(b: dict, r, out_file: Path, usage_file: Path):
             ok = ok and data.get(o.get("status", "status"), o.get("ok", "SUCCESS")) == o.get("ok", "SUCCESS")
             if "duration_seconds" in data:
                 info.append(f"{data['duration_seconds']:.0f} 秒")
-            tok = (data.get("usage") or {}).get("total_tokens")
-            if tok:
-                info.append(f"tokens {tok:,}")
+            tokens = (data.get("usage") or {}).get("total_tokens")
+            if tokens:
+                info.append(f"tokens {tokens:,}")
             denied = [d.get("display_name") or d.get("action") for d in data.get(o.get("denied", "denied_actions")) or []]
     elif o["type"] == "file":
         text = out_file.read_text(encoding="utf-8", errors="replace") if out_file.exists() else ""
@@ -219,9 +224,11 @@ def parse_output(b: dict, r, out_file: Path, usage_file: Path):
     if usage_file.exists():
         try:
             u = json.loads(usage_file.read_text(encoding="utf-8"))
-            info.append(f"model {u.get('model')}")
+            model = u.get("model")
+            info.append(f"model {model}")
             if u.get("input_tokens") is not None:
-                info.append(f"tokens {(u.get('input_tokens') or 0) + (u.get('output_tokens') or 0):,}")
+                tokens = (u.get("input_tokens") or 0) + (u.get("output_tokens") or 0)
+                info.append(f"tokens {tokens:,}")
             if u.get("failed"):
                 ok = False
                 info.append(f"失敗：{u.get('failure')}")
@@ -229,7 +236,38 @@ def parse_output(b: dict, r, out_file: Path, usage_file: Path):
             pass
     text = text.replace("file:///" + Path.cwd().as_posix() + "/", "")
     return {"ok": ok and bool(text.strip()), "text": text.strip(), "info": info, "denied": denied,
-            "stderr": r.stderr.strip(), "code": r.returncode}
+            "stderr": r.stderr.strip(), "code": r.returncode, "tokens": tokens, "model": model}
+
+
+# ---------- 執行紀錄 ----------
+
+def write_log(entry: dict) -> None:
+    """紀錄失敗不影響派工結果。"""
+    try:
+        RUN_LOG.parent.mkdir(parents=True, exist_ok=True)
+        with RUN_LOG.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except OSError as e:
+        sys.stderr.write(f"[無法寫入執行紀錄 {RUN_LOG}：{e}]\n")
+
+
+def cmd_log(n: int) -> None:
+    if not RUN_LOG.exists():
+        print(f"還沒有任何紀錄（{RUN_LOG}）")
+        return
+    lines = RUN_LOG.read_text(encoding="utf-8").splitlines()[-n:]
+    print(f"最近 {len(lines)} 筆（完整紀錄：{RUN_LOG}）")
+    for line in lines:
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        tok = f"，tokens {e['tokens']:,}" if e.get("tokens") else ""
+        print(f"- {e.get('time')}｜{e.get('backend')}｜{'成功' if e.get('ok') else '失敗'}｜"
+              f"{e.get('seconds')} 秒{tok}｜{Path(e.get('cwd', '')).name}")
+        print(f"    問題：{e.get('question')}")
+        if e.get("error"):
+            print(f"    錯誤：{e['error']}")
 
 
 # ---------- CLI ----------
@@ -265,8 +303,13 @@ def main() -> int:
     a.add_argument("targets", nargs="*", help="相對路徑（檔案或資料夾），預設 .")
     a.add_argument("--timeout", default="10m")
     a.add_argument("--model", default=None)
+    lg = sub.add_parser("log", help="顯示最近的派工紀錄")
+    lg.add_argument("-n", type=int, default=20)
     args = ap.parse_args()
 
+    if args.cmd == "log":
+        cmd_log(args.n)
+        return 0
     backends = load_backends()
     if args.cmd == "list":
         cmd_list(backends)
@@ -280,7 +323,18 @@ def main() -> int:
     else:
         raise SystemExit(f"沒有這個後端：{args.backend}（可用：{', '.join(backends)}）")
 
-    res = run(b, args.question, args.targets, args.timeout, args.model)
+    entry = {"time": datetime.now().isoformat(timespec="seconds"), "cwd": str(Path.cwd()), "backend": b["name"],
+             "model": args.model or b.get("model"), "question": args.question[:500], "targets": args.targets}
+    t0 = time.monotonic()
+    try:
+        res = run(b, args.question, args.targets, args.timeout, args.model)
+    except SystemExit as e:  # 找不到執行檔、逾時、沒有可送的檔案
+        write_log({**entry, "ok": False, "seconds": round(time.monotonic() - t0), "error": str(e.code)[:500]})
+        raise
+    write_log({**entry, "model": res["model"] or entry["model"], "ok": res["ok"],
+               "seconds": round(time.monotonic() - t0), "tokens": res["tokens"], "denied": res["denied"],
+               "answer_chars": len(res["text"]),
+               "error": None if res["ok"] else (res["stderr"][-300:] or f"結束代碼 {res['code']}")})
     print(res["text"] or "[副手沒有回傳內容]")
     sys.stderr.write(f"[{b['name']} {'成功' if res['ok'] else '失敗'}"
                      f"{'，' + '，'.join(res['info']) if res['info'] else ''}]\n")

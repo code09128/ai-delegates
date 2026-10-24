@@ -35,6 +35,7 @@ python "<本技能資料夾>/delegate.py" ask auto "具體問題：要找什麼�
 - 選項：`--timeout 15m`（預設 10m）、`--model 名稱`
 - 通常 1～5 分鐘；Bash／PowerShell 工具的 timeout 設 600000
 - stdout＝副手的回報；stderr＝耗時、用量、被拒絕的動作、錯誤
+- 每次 `ask` 都會記在 `~/.ai-delegates/runs.jsonl`；使用者問「派過哪些任務」時執行 `delegate.py log -n 20` 回答
 
 ## 拿到結果之後
 1. 副手的回報是線索，不是事實：用 Read 打開它列出的 `檔案:行號`，確認後才採用。

@@ -9,7 +9,7 @@
       "name": "ai-delegates",
       "source": "./",
       "description": "Claude Code 主控＋外部 AI CLI 偵察副手（只讀、回傳檔案:行號＋摘要）",
-      "version": "0.1.1"
+      "version": "0.1.2"
     }
   ]
 }

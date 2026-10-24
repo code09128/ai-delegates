@@ -76,6 +76,16 @@ Requires Python 3.10 or later. Only the standard library is used.
   python delegate.py ask auto "question" path1 path2 --timeout 15m --model model-name
   ```
 
+### Run history
+
+Every `ask` appends one line to `~/.ai-delegates/runs.jsonl`: time, project folder, backend, model, question, success or failure, duration, tokens, and any denied actions. To see the latest runs:
+
+```
+python delegate.py log -n 20
+```
+
+Or just ask Claude which tasks it delegated.
+
 To keep a project's code from being sent to outside services, add the line `禁止使用外部 AI` ("do not use external AI") to that project's `CLAUDE.md`.
 
 ## Adding or adjusting a backend
