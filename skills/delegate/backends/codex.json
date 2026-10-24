@@ -1,0 +1,18 @@
+{
+  "name": "codex",
+  "label": "OpenAI Codex CLI（GPT，範本）",
+  "priority": 2,
+  "enabled": false,
+  "disabled_reason": "範本，尚未啟用。安裝並登入 codex 後，在 ~/.ai-delegates/backends/codex.json 寫 {\"enabled\": true}",
+  "tested": "範本（未測試）",
+  "context": "agent",
+  "good_at": "GPT 系列模型的第二意見；自己讀檔與搜尋",
+  "exe": ["codex", "%APPDATA%/npm/codex.cmd"],
+  "args": ["exec", "--sandbox", "read-only", "--skip-git-repo-check", "--output-last-message", "{out_file}",
+           ["--model", "{model}"], "-"],
+  "stdin": "prompt",
+  "output": {"type": "file"},
+  "readonly": "--sandbox read-only：可以讀檔與執行唯讀指令，不能寫檔或連網",
+  "install": "npm install -g @openai/codex",
+  "login": "執行一次 codex，用 ChatGPT 帳號或 OPENAI_API_KEY 登入"
+}

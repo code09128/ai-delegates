@@ -1,0 +1,16 @@
+{
+  "name": "agy",
+  "label": "Antigravity CLI（Google Gemini）",
+  "priority": 1,
+  "enabled": true,
+  "tested": "已測試（Windows，2026-10）",
+  "context": "agent",
+  "good_at": "超大 context，自己讀檔與搜尋：整包程式碼、跨很多檔案的呼叫路徑、大型 log／JSON",
+  "exe": ["agy", "%LOCALAPPDATA%/agy/bin/agy.exe", "~/.local/bin/agy"],
+  "args": ["-p", "{prompt}", "--output-format", "json", "--print-timeout", "{timeout}",
+           "--disable-slash-commands", ["--model", "{model}"]],
+  "output": {"type": "json", "text": "response", "status": "status", "ok": "SUCCESS", "denied": "denied_actions"},
+  "readonly": "headless 模式不加 --dangerously-skip-permissions 時，寫檔與執行指令會被自動拒絕。不要在 ~/.gemini/antigravity-cli/settings.json 加寫入的 permissions.allow",
+  "install": "Windows：irm https://antigravity.google/cli/install.ps1 | iex；macOS/Linux：curl -fsSL https://antigravity.google/cli/install.sh | bash",
+  "login": "在終端機執行一次 agy，用瀏覽器登入 Google 帳號"
+}

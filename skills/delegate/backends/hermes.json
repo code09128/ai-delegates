@@ -1,0 +1,19 @@
+{
+  "name": "hermes",
+  "label": "Hermes Agent（範本）",
+  "priority": 3,
+  "enabled": false,
+  "disabled_reason": "範本，尚未啟用。要使用時在 ~/.ai-delegates/backends/hermes.json 寫 {\"enabled\": true, \"model\": \"模型名稱\"}",
+  "tested": "範本（packed 模式的示範）",
+  "context": "packed",
+  "max_context_chars": 200000,
+  "max_file_chars": 80000,
+  "good_at": "第二意見、交叉檢查；可用 Hermes 支援的任何模型。只看得到送進去的檔案",
+  "exe": ["hermes", "%LOCALAPPDATA%/hermes/bin/hermes.exe", "~/.local/bin/hermes"],
+  "args": ["chat", "-Q", "--query-file", "{prompt_file}", "-t", "todo", "--max-turns", "0",
+           "--ignore-rules", "--source", "tool", ["-m", "{model}"]],
+  "output": {"type": "text"},
+  "readonly": "Hermes 單次模式會自動略過確認，所以用 -t todo 只開無害工具、--max-turns 0 禁止工具呼叫，檔案內容由執行器讀好（已排除機密）再送出",
+  "install": "見 Hermes Agent 官方安裝說明；裝好後執行 hermes setup 設定模型",
+  "login": "hermes model 選模型，或在覆寫檔設定 \"model\""
+}
