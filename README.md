@@ -1,138 +1,142 @@
 # ai-delegates
 
-讓 **Claude Code 當主控**，把耗 context 的只讀偵察工作派給其他 AI CLI 當副手。偵察工作包括跨很多檔案找程式碼、追呼叫路徑、讀大型 log、讀陌生程式碼。副手回傳「`檔案:行號`＋摘要」，Claude 再自己打開關鍵段落確認、修改並測試。
+Let **Claude Code be the lead** and hand off context-heavy, read-only reconnaissance to other AI CLIs as helpers: searching across many files, tracing call paths, reading large logs, getting oriented in unfamiliar code. A helper returns `file:line` locations plus a short summary, and Claude then opens those spots itself, confirms them, makes the changes and runs the tests.
 
 ```
-你 ──▶ Claude Code（主控：推理、修改、測試、git）
-            │  派只讀任務
+You ──▶ Claude Code (lead: reasoning, edits, tests, git)
+            │  read-only task
             ▼
-        delegate.py ──▶ agy（Gemini）／codex（GPT）／hermes／…（後端，可擴充）
+        delegate.py ──▶ agy (Gemini) / codex (GPT) / hermes / … (pluggable backends)
             ▲
-            └── 回傳：關鍵位置（檔案:行號）、核心邏輯、修改方向、不確定之處
+            └── report: key locations (file:line), core logic, suggested changes, open questions
 ```
 
-## 後端
+## Backends
 
-| 後端 | 狀態 | 讀檔方式 | 只讀保護 |
+| Backend | Status | How it reads code | Read-only guarantee |
 |---|---|---|---|
-| `agy`：Antigravity CLI（Google Gemini） | ✅ 已測試 | 自己讀檔、搜尋 | headless 模式自動拒絕寫檔與執行指令 |
-| `codex`：OpenAI Codex CLI（GPT） | 範本，預設停用 | 自己讀檔、搜尋 | `--sandbox read-only` |
-| `hermes`：Hermes Agent | 範本，預設停用 | 由執行器把檔案內容放進問題（packed） | 只開無害工具組，並禁止工具呼叫 |
+| `agy`: Antigravity CLI (Google Gemini) | ✅ Tested | Reads and searches files itself | Headless mode auto-denies file writes and shell commands |
+| `codex`: OpenAI Codex CLI (GPT) | Template, disabled by default | Reads and searches files itself | `--sandbox read-only` |
+| `hermes`: Hermes Agent | Template, disabled by default | The runner packs file contents into the prompt (`packed`) | Only a harmless toolset is enabled and tool calls are blocked |
 
-## 安裝
+## Installation
 
-**1. 安裝外掛**：在 Claude Code 裡執行：
+**1. Install the plugin.** In Claude Code, run:
 
 ```
 /plugin marketplace add code09128/ai-delegates
 /plugin install ai-delegates@code09128
 ```
 
-裝好後重開 Claude Code。之後要更新外掛時執行 `/plugin update ai-delegates`。
+Restart Claude Code afterwards. To update later, run `/plugin update ai-delegates`.
 
-**2. 安裝至少一個副手 CLI**，以 agy 為例：
+**2. Install at least one helper CLI.** For agy:
 
-- Windows（PowerShell）：
+- Windows (PowerShell):
 
   ```
   irm https://antigravity.google/cli/install.ps1 | iex
   ```
 
-- macOS／Linux：
+- macOS / Linux:
 
   ```
   curl -fsSL https://antigravity.google/cli/install.sh | bash
   ```
 
-裝好後執行一次 `agy`，用瀏覽器登入 Google 帳號。
+Then run `agy` once and sign in with your Google account in the browser.
 
-**3. 確認**：在任一專案資料夾執行：
+**3. Check the setup.** From any project folder, run:
 
 ```
-python <外掛路徑>/skills/delegate/delegate.py list
+python <plugin path>/skills/delegate/delegate.py list
 ```
 
-需求：Python 3.10 以上，只用標準函式庫。
+Requires Python 3.10 or later. Only the standard library is used.
 
-## 使用
+## Usage
 
-- **自動**：遇到大範圍探索時，Claude 會自己判斷要不要派副手，判斷規則見 `skills/delegate/SKILL.md`。
-- **手動**：
-
-  ```
-  /delegate agy 找出所有呼叫 sendToMod2 的地方，以及它改了哪些狀態
-  ```
-
-- **直接執行**：
+- **Automatic**: when a task calls for broad exploration, Claude decides on its own whether to delegate. The rules are in `skills/delegate/SKILL.md`.
+- **Manual**:
 
   ```
-  python delegate.py ask auto "問題" 路徑1 路徑2 --timeout 15m --model 模型名稱
+  /delegate agy find every caller of sendToMod2 and which state it changes
   ```
 
-不想讓某個專案的程式碼送到外部服務時，在該專案的 `CLAUDE.md` 寫一行「禁止使用外部 AI」。
+- **Direct**:
 
-## 新增或調整後端
+  ```
+  python delegate.py ask auto "question" path1 path2 --timeout 15m --model model-name
+  ```
 
-**不用改程式。** 在 `skills/delegate/backends/` 加一個 JSON 檔：
+To keep a project's code from being sent to outside services, add the line `禁止使用外部 AI` ("do not use external AI") to that project's `CLAUDE.md`.
+
+## Adding or adjusting a backend
+
+**No code changes needed.** Add a JSON file to `skills/delegate/backends/`:
 
 ```json
 {
   "name": "my-ai",
-  "label": "顯示名稱",
+  "label": "Display name",
   "priority": 5,
   "enabled": true,
   "context": "agent",
-  "good_at": "擅長什麼（Claude 用來挑後端）",
+  "good_at": "What it is good at (Claude uses this to pick a backend)",
   "exe": ["my-ai", "%LOCALAPPDATA%/my-ai/bin/my-ai.exe"],
   "args": ["run", "--print", "{prompt}", "--read-only", ["--model", "{model}"]],
   "output": {"type": "text"},
-  "readonly": "說明它靠什麼保證不會改檔",
-  "install": "安裝指令",
-  "login": "登入方式"
+  "readonly": "How it guarantees it will not modify files",
+  "install": "Install command",
+  "login": "How to sign in"
 }
 ```
 
-**佔位符**
+**Placeholders**
 
-| 佔位符 | 代表什麼 |
+| Placeholder | Meaning |
 |---|---|
-| `{prompt}` | 完整的問題文字 |
-| `{prompt_file}` | 問題寫入的暫存檔 |
-| `{out_file}` | 讓 CLI 寫入最後回答的檔案 |
-| `{usage_file}` | 讓 CLI 寫入用量紀錄的檔案 |
-| `{timeout}` | 逾時設定，例如 `10m` |
-| `{timeout_seconds}` | 逾時秒數 |
-| `{model}` | 模型名稱 |
-| `{cwd}` | 目前的專案資料夾 |
+| `{prompt}` | The full prompt text |
+| `{prompt_file}` | Temporary file containing the prompt |
+| `{out_file}` | File the CLI writes its final answer to |
+| `{usage_file}` | File the CLI writes its usage report to |
+| `{timeout}` | Timeout, e.g. `10m` |
+| `{timeout_seconds}` | Timeout in seconds |
+| `{model}` | Model name |
+| `{cwd}` | Current project folder |
 
-用陣列包起來的一組參數（例如 `["--model", "{model}"]`），在佔位符沒有值時會整組略過。
+A group of arguments wrapped in an inner array (for example `["--model", "{model}"]`) is dropped as a whole when any of its placeholders has no value.
 
-**其他欄位**
+**Other fields**
 
-| 欄位 | 可選的值 |
+| Field | Values |
 |---|---|
-| `output.type` | `json`：從 JSON 取欄位；`text`：直接用 stdout；`file`：讀 `{out_file}` |
-| `context` | `agent`：後端自己讀檔，必須有只讀保護；`packed`：執行器讀好檔案再送，適合沒辦法限制成只讀的後端 |
-| `stdin` | 設成 `"prompt"` 時，問題從標準輸入送進去 |
+| `output.type` | `json`: read fields from JSON output; `text`: use stdout as is; `file`: read `{out_file}` |
+| `context` | `agent`: the backend reads files itself and must have a read-only guarantee; `packed`: the runner reads the files and sends them, for backends that cannot be restricted to read-only |
+| `stdin` | Set to `"prompt"` to send the prompt on standard input |
 
-**個人覆寫**：放在 `~/.ai-delegates/backends/<名稱>.json`，只要寫要改的欄位，外掛更新時不會被蓋掉。例如啟用 codex：
+**Personal overrides** go in `~/.ai-delegates/backends/<name>.json`. Include only the fields you want to change; plugin updates will not overwrite them. For example, to enable codex:
 
 ```json
 { "enabled": true }
 ```
 
-## 安全設計
+## Security
 
-- **只讀**：每個後端都必須說明自己怎麼保證不改檔。執行器絕對不會加 `--dangerously-skip-permissions`、`--yolo` 這類旗標。
-- **排除機密**：packed 模式一律不送出以下內容：
-  - `.env*`（`.env.example` 除外）
-  - 金鑰與憑證檔：`*.pem`、`*.key`、`credentials*`、`token*.json`
-  - `data/`、`logs/`、`secrets/`、`.git/`、`node_modules/` 資料夾
-  - 資料庫與 log 檔
+- **Read-only**: every backend must state how it guarantees it will not modify files. The runner never adds flags such as `--dangerously-skip-permissions` or `--yolo`.
+- **Secrets excluded**: `packed` mode never sends any of the following:
+  - `.env*` (except `.env.example`)
+  - Key and credential files: `*.pem`, `*.key`, `credentials*`, `token*.json`
+  - The folders `data/`, `logs/`, `secrets/`, `.git/`, `node_modules/`
+  - Database and log files
 
-  agent 模式則在問題裡要求副手不要讀這些檔案。
-- **副手的話只是線索**：Claude 必須自己打開它列出的行號確認後才能採用。
+  In `agent` mode the prompt instructs the helper not to read these files.
+- **A helper's report is a lead, not a fact**: Claude must open the listed lines and confirm them before relying on them.
 
-## 授權
+## Language
+
+The skill instructions and the helper's reports are in Traditional Chinese. To change the report language, edit `RULES` in `skills/delegate/delegate.py`.
+
+## License
 
 MIT
