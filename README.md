@@ -54,13 +54,20 @@ python <plugin path>/skills/delegate/delegate.py list
 
 Requires Python 3.10 or later. Only the standard library is used.
 
+**4. Optional: skip the approval prompt.** Each delegation runs one `python …/delegate.py` command. To stop Claude Code from asking every time, add these rules to `permissions.allow` in `~/.claude/settings.json`:
+
+```json
+"Bash(python *ai-delegates*delegate.py *)",
+"PowerShell(python *ai-delegates*delegate.py *)"
+```
+
 ## Usage
 
 - **Automatic**: when a task calls for broad exploration, Claude decides on its own whether to delegate. The rules are in `skills/delegate/SKILL.md`.
-- **Manual**:
+- **Manual**: invoke the skill directly (or just ask Claude to "delegate this to agy"):
 
   ```
-  /delegate agy find every caller of sendToMod2 and which state it changes
+  /ai-delegates:delegate agy find every caller of sendToMod2 and which state it changes
   ```
 
 - **Direct**:
