@@ -8,8 +8,8 @@
     {
       "name": "ai-delegates",
       "source": "./",
-      "description": "Claude Code 主控＋外部 AI CLI 偵察副手（只讀、回傳檔案:行號＋摘要）",
-      "version": "0.1.2"
+      "description": "每個角色選用哪個 AI：主控可換成 GPT／Gemini 等，只讀偵察派給設定的副手（回傳檔案:行號＋摘要）",
+      "version": "0.2.0"
     }
   ]
 }

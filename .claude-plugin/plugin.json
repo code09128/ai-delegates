@@ -1,12 +1,22 @@
 {
   "name": "ai-delegates",
-  "version": "0.1.2",
-  "description": "讓 Claude Code 當主控，把只讀的大範圍偵察（跨檔案搜尋、大型 log、陌生程式碼）派給其他 AI CLI（Antigravity／Gemini，可擴充 GPT、Hermes 等），回傳「檔案:行號＋摘要」。",
+  "version": "0.2.0",
+  "description": "選擇每個角色用哪個 AI：主控（lead）可以是 Claude 或 GPT／Gemini 等外部模型，只讀偵察（搜尋、大型 log、陌生程式碼、交叉檢查）派給設定的副手（Antigravity／Gemini、Codex／GPT、Hermes、Claude…），回傳「檔案:行號＋摘要」。終端機 setup 選單或 /ai-delegates:setup 設定。",
   "author": {
     "name": "code09128"
   },
   "homepage": "https://github.com/code09128/ai-delegates",
   "repository": "https://github.com/code09128/ai-delegates",
   "license": "MIT",
-  "keywords": ["delegate", "subagent", "gemini", "antigravity", "multi-agent", "code-search"]
+  "keywords": [
+    "antigravity",
+    "code-search",
+    "codex",
+    "delegate",
+    "gemini",
+    "gpt",
+    "model-routing",
+    "multi-agent",
+    "subagent"
+  ]
 }

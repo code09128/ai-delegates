@@ -1,15 +1,84 @@
 # ai-delegates
 
-Let **Claude Code be the lead** and hand off context-heavy, read-only reconnaissance to other AI CLIs as helpers: searching across many files, tracing call paths, reading large logs, getting oriented in unfamiliar code. A helper returns `file:line` locations plus a short summary, and Claude then opens those spots itself, confirms them, makes the changes and runs the tests.
+Pick which AI does which job. The **lead** understands the request and plans; **helpers** do context-heavy, read-only reconnaissance: searching across many files, tracing call paths, reading large logs, getting oriented in unfamiliar code. A helper returns `file:line` locations plus a short summary, and the lead opens those spots, confirms them, makes the changes and runs the tests.
 
 ```
-You ──▶ Claude Code (lead: reasoning, edits, tests, git)
-            │  read-only task
+You ──▶ Claude Code ──▶ delegate.py route <role> ──▶ who handles it? (your settings)
+            │                      ├── lead    : claude (itself) / gpt / gemini … (external leads plan read-only)
+            │                      └── helpers : search / log / explore / review → agy / codex / hermes / claude …
             ▼
-        delegate.py ──▶ agy (Gemini) / codex (GPT) / hermes / … (pluggable backends)
-            ▲
-            └── report: key locations (file:line), core logic, suggested changes, open questions
+        edits, tests, git (always done by the CLI you are working in)
 ```
+
+## Quick start
+
+After [installing](#installation), pick who does what, then just work:
+
+| Step | In Claude Code | In a terminal (from the project root) |
+|---|---|---|
+| 1. See what is available | `/ai-delegates:setup` | `python <plugin path>/skills/delegate/delegate.py list` |
+| 2. Choose each role's AI and model | answer the menus | `python …/delegate.py setup` (add `--project` for this project only) |
+| 3. Check | Claude shows the result | `python …/delegate.py show` |
+| 4. Work | ask as usual; Claude delegates by role | `python …/delegate.py ask search "question" path…` |
+
+`<plugin path>` is where Claude Code installed the plugin, under `~/.claude/plugins/`. To find it:
+
+```
+find ~/.claude/plugins -name delegate.py -path '*ai-delegates*'
+```
+
+### Animated demo
+
+`docs/demo.html` shows how a request travels between the lead, `delegate.py` and each AI. Download it and open it in a browser (no install needed; it fetches fonts from Google Fonts when online).
+
+1. Choose **where you work** (Claude Code, or another AI's CLI such as Codex), then the AI for `lead`, `search` and `review`.
+2. Press **▶ 播放** (play). The left side animates each hand-off; the terminal on the right shows the matching command and reply.
+3. Use **下一步** (next step) to go one step at a time and **重來** (start over) to reset; the panel below explains each step.
+4. The bottom of the page lists real test runs and compares mode A and mode B.
+
+The demo only replays recorded steps. It does not run any AI or touch your files.
+
+## Roles
+
+| Role | Job | Default |
+|---|---|---|
+| `lead` | Understand the request, plan, decide | `claude` |
+| `search` | Search across files, trace call paths | `auto` |
+| `log` | Large logs / JSON / data files | `auto` |
+| `explore` | Get oriented in unfamiliar or third-party code | `auto` |
+| `review` | Cross-check after changes | `auto` |
+
+`auto` picks the first installed, enabled backend by `priority`. Each role can have its own backend **and model**.
+
+### Choosing
+
+- **In Claude Code**: run `/ai-delegates:setup`. Claude asks with menus and saves your choices.
+- **In a terminal**:
+
+  ```
+  python delegate.py setup            # menu: each role → backend → model (only installed, enabled backends are listed)
+  python delegate.py show             # current settings
+  python delegate.py set search agy --model gemini-3.8-flash-medium
+  python delegate.py set lead codex --model gpt-5
+  python delegate.py reset [role]     # back to default
+  python delegate.py models agy       # models a backend offers
+  ```
+
+Settings live in `~/.ai-delegates/config.json`. A project can override them with `.ai-delegates.json` in its root (add `--project` to `setup`/`set`/`reset`), for example to allow only `claude` in a sensitive project.
+
+### When the lead is not Claude
+
+There are two ways, depending on who should edit the files:
+
+| | A: other AI plans inside Claude Code | B: other AI is the real lead in its own CLI |
+|---|---|---|
+| Where you work | Claude Code | Codex CLI or another AI's CLI |
+| Planning | The `lead` you chose (e.g. GPT), read-only, via `delegate.py plan` | That AI |
+| Edits, tests, git | Claude, following the plan and verifying each step | That AI |
+| Helpers | agy / codex / hermes | agy / hermes / **claude** |
+| Setup | `set lead codex` | Copy `templates/AGENTS.md` into the project's `AGENTS.md` |
+
+In A, Claude stops and tells you when the plan does not match the code instead of following it blindly. In B, `claude` works as a read-only helper (`claude -p` with only Read, Grep and Glob).
 
 ## Backends
 
@@ -18,6 +87,9 @@ You ──▶ Claude Code (lead: reasoning, edits, tests, git)
 | `agy`: Antigravity CLI (Google Gemini) | ✅ Tested | Reads and searches files itself | Headless mode auto-denies file writes and shell commands |
 | `codex`: OpenAI Codex CLI (GPT) | Template, disabled by default | Reads and searches files itself | `--sandbox read-only` |
 | `hermes`: Hermes Agent | Template, disabled by default | The runner packs file contents into the prompt (`packed`) | Only a harmless toolset is enabled and tool calls are blocked |
+| `claude`: Claude Code as a helper | For non-Claude leads | Reads and searches files itself | `--tools Read,Grep,Glob` (no write or shell tools), plan permission mode, `--restricted` |
+
+When you are already in Claude Code, a role set to `claude` is handled by Claude's own subagents instead of starting another `claude`.
 
 ## Installation
 
@@ -67,18 +139,20 @@ Requires Python 3.10 or later. Only the standard library is used.
 - **Manual**: invoke the skill directly (or just ask Claude to "delegate this to agy"):
 
   ```
-  /ai-delegates:delegate agy find every caller of sendToMod2 and which state it changes
+  /ai-delegates:delegate search find every caller of sendToMod2 and which state it changes
   ```
 
 - **Direct**:
 
   ```
-  python delegate.py ask auto "question" path1 path2 --timeout 15m --model model-name
+  python delegate.py ask search "question" path1 path2       # by role (uses your settings)
+  python delegate.py ask agy "question" path1 --model name    # a specific backend; --model overrides the role setting
+  python delegate.py plan "the task" path1 path2              # ask the lead to plan (read-only)
   ```
 
 ### Run history
 
-Every `ask` appends one line to `~/.ai-delegates/runs.jsonl`: time, project folder, backend, model, question, success or failure, duration, tokens, and any denied actions. To see the latest runs:
+Every `ask` and `plan` appends one line to `~/.ai-delegates/runs.jsonl`: time, project folder, role, backend, model, question, success or failure, duration, tokens, and any denied actions. To see the latest runs:
 
 ```
 python delegate.py log -n 20
@@ -131,6 +205,8 @@ A group of arguments wrapped in an inner array (for example `["--model", "{model
 | `output.type` | `json`: read fields from JSON output; `text`: use stdout as is; `file`: read `{out_file}` |
 | `context` | `agent`: the backend reads files itself and must have a read-only guarantee; `packed`: the runner reads the files and sends them, for backends that cannot be restricted to read-only |
 | `stdin` | Set to `"prompt"` to send the prompt on standard input |
+| `models` | Fixed list of model names shown by `setup` |
+| `models_cmd` | Arguments that make the CLI print its models, e.g. `["models"]` for agy (first column is used) |
 
 **Personal overrides** go in `~/.ai-delegates/backends/<name>.json`. Include only the fields you want to change; plugin updates will not overwrite them. For example, to enable codex:
 

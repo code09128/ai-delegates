@@ -6,6 +6,7 @@
   "tested": "已測試（Windows，2026-10）",
   "context": "agent",
   "good_at": "超大 context，自己讀檔與搜尋：整包程式碼、跨很多檔案的呼叫路徑、大型 log／JSON",
+  "models_cmd": ["models"],
   "exe": ["agy", "%LOCALAPPDATA%/agy/bin/agy.exe", "~/.local/bin/agy"],
   "args": ["-p", "{prompt}", "--output-format", "json", "--print-timeout", "{timeout}",
            "--disable-slash-commands", ["--model", "{model}"]],

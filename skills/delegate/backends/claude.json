@@ -1,0 +1,17 @@
+{
+  "name": "claude",
+  "label": "Claude Code（Anthropic Claude，當副手）",
+  "priority": 4,
+  "enabled": true,
+  "tested": "已測試（Linux，2026-11）",
+  "context": "agent",
+  "good_at": "給 GPT／Gemini 等主控用的第二意見；自己讀檔與搜尋。主控本身就是 Claude Code 時不用派給它，直接用內建子代理",
+  "models": ["haiku", "sonnet", "opus"],
+  "exe": ["claude", "%APPDATA%/npm/claude.cmd", "~/.local/bin/claude"],
+  "args": ["-p", "{prompt}", "--output-format", "json", "--tools", "Read,Grep,Glob", "--permission-mode", "plan",
+           "--restricted", "--strict-mcp-config", "--no-session-persistence", ["--model", "{model}"]],
+  "output": {"type": "json", "text": "result", "status": "subtype", "ok": "success"},
+  "readonly": "--tools 只開 Read、Grep、Glob（沒有寫檔、執行指令的工具），加上 plan 權限模式與 --restricted（檔案工具限在專案資料夾、不讀使用者設定、不載入 MCP）",
+  "install": "npm install -g @anthropic-ai/claude-code",
+  "login": "在終端機執行一次 claude 並登入"
+}
