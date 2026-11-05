@@ -92,6 +92,16 @@ The demo only replays recorded steps. It does not run any AI or touch your files
 
 `auto` picks the first installed, enabled backend by `priority`. Each role can have its own backend **and model**.
 
+Any backend works for any role, including `lead`: the bundled ones (`claude`, `agy`, `codex`, `hermes`) or [one you add](#adding-or-adjusting-a-backend) with a JSON file. The model can be anything that backend offers; agy, for example, also runs Claude and GPT-OSS models (`python delegate.py models agy` lists them):
+
+```
+python delegate.py set lead agy --model gemini-4-argon-high
+python delegate.py set lead agy --model claude-opus-5-5-high
+python delegate.py set lead my-ai
+```
+
+To have another AI do the edits itself (not just plan), work in its own CLI instead: see mode B below.
+
 ### Choosing
 
 See [Quick start](#quick-start) for the three ways to choose. Other commands:

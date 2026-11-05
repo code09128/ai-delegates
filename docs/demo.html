@@ -12,7 +12,7 @@
 :root {
   --bg: #f3f4f1; --panel: #ffffff; --ink: #1d2422; --muted: #5d6763; --line: #d6dad5;
   --accent: #2f6f62; --accent-soft: #e1eeea;
-  --claude: #b85a3a; --gemini: #3563c9; --gpt: #128a6c; --hermes: #7a4fb8; --off: #9aa29e;
+  --claude: #b85a3a; --gemini: #3563c9; --gpt: #128a6c; --hermes: #7a4fb8; --custom: #8a6a12; --off: #9aa29e;
   --term-bg: #17201d; --term-ink: #d8e2dc; --term-dim: #7f918a; --term-ok: #8fd3b1; --term-warn: #e9b872;
   --ok: #1f8a5b; --warn: #b5701b; --bad: #b8433a;
   --f-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
@@ -21,13 +21,13 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #121715; --panel: #1a211e; --ink: #e3e9e5; --muted: #95a29c; --line: #2c3632;
   --accent: #6fc2ad; --accent-soft: #1f3530;
-  --claude: #e08a68; --gemini: #7ea2f0; --gpt: #4fc7a3; --hermes: #b392e6; --off: #5f6a66;
+  --claude: #e08a68; --gemini: #7ea2f0; --gpt: #4fc7a3; --hermes: #b392e6; --custom: #d8b45a; --off: #5f6a66;
   --term-bg: #0b0f0e; --term-ink: #d8e2dc; --term-dim: #6f817a; --term-ok: #8fd3b1; --term-warn: #e9b872;
   --ok: #5cc690; --warn: #e3a54d; --bad: #e57b70; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #121715; --panel: #1a211e; --ink: #e3e9e5; --muted: #95a29c; --line: #2c3632;
   --accent: #6fc2ad; --accent-soft: #1f3530;
-  --claude: #e08a68; --gemini: #7ea2f0; --gpt: #4fc7a3; --hermes: #b392e6; --off: #5f6a66;
+  --claude: #e08a68; --gemini: #7ea2f0; --gpt: #4fc7a3; --hermes: #b392e6; --custom: #d8b45a; --off: #5f6a66;
   --term-bg: #0b0f0e; --term-ink: #d8e2dc; --term-dim: #6f817a; --term-ok: #8fd3b1; --term-warn: #e9b872;
   --ok: #5cc690; --warn: #e3a54d; --bad: #e57b70; color-scheme: dark }
 
@@ -128,8 +128,9 @@ html[data-lang="zh"] [data-l="en"], html[data-lang="en"] [data-l="zh"] { display
 
   <section class="controls">
     <div class="ctl"><label for="ws"><span data-l="zh">在哪個 CLI 工作</span><span data-l="en">Where you work</span></label>
-      <select id="ws"><option value="claude">Claude Code</option><option value="codex">Codex CLI (GPT)</option></select></div>
+      <select id="ws"><option value="claude">Claude Code</option><option value="codex">Codex CLI (GPT)</option><option value="agy">Antigravity CLI (Gemini)</option></select></div>
     <div class="ctl"><label for="lead"><span data-l="zh">lead 主控(規劃)</span><span data-l="en">lead (plans)</span></label><select id="lead"></select></div>
+    <div class="ctl"><label for="leadModel"><span data-l="zh">lead 的模型</span><span data-l="en">lead model</span></label><select id="leadModel"></select></div>
     <div class="ctl"><label for="search"><span data-l="zh">search 跨檔案搜尋</span><span data-l="en">search (across files)</span></label><select id="search"></select></div>
     <div class="ctl"><label for="review"><span data-l="zh">review 交叉檢查</span><span data-l="en">review (cross-check)</span></label><select id="review"></select></div>
     <div class="mode" id="mode"></div>
@@ -253,8 +254,8 @@ $ delegate.py route search
     <div class="tablewrap"><table data-l="zh">
       <thead><tr><th></th><th>A:在 Claude Code 裡,別的 AI 規劃</th><th>B:在別的 AI 自己的 CLI 裡當主控</th></tr></thead>
       <tbody>
-        <tr><th>在哪裡工作</th><td>Claude Code</td><td>Codex CLI 等</td></tr>
-        <tr><th>規劃</th><td>lead 選的 AI,唯讀,<code>delegate.py plan</code></td><td>那個 AI 自己</td></tr>
+        <tr><th>在哪裡工作</th><td>Claude Code</td><td>Codex CLI、Antigravity CLI(Gemini)等任何能執行指令的 AI CLI</td></tr>
+        <tr><th>規劃</th><td>lead 設定的任何後端與模型,唯讀,<code>delegate.py plan</code></td><td>那個 AI 自己</td></tr>
         <tr><th>改檔、測試、git</th><td>Claude 照計畫做,每步驗證;計畫和程式不符就停下來說</td><td>那個 AI 自己</td></tr>
         <tr><th>副手</th><td>agy、codex、hermes</td><td>agy、hermes、claude(唯讀)</td></tr>
         <tr><th>怎麼設定</th><td><code>delegate.py set lead codex</code> 或 <code>/ai-delegates:setup</code></td><td>把 <code>templates/AGENTS.md</code> 放進專案</td></tr>
@@ -262,8 +263,8 @@ $ delegate.py route search
     </table><table data-l="en">
       <thead><tr><th></th><th>A: another AI plans inside Claude Code</th><th>B: another AI is the real lead in its own CLI</th></tr></thead>
       <tbody>
-        <tr><th>Where you work</th><td>Claude Code</td><td>Codex CLI, etc.</td></tr>
-        <tr><th>Planning</th><td>The AI chosen for lead, read-only, <code>delegate.py plan</code></td><td>That AI</td></tr>
+        <tr><th>Where you work</th><td>Claude Code</td><td>Codex CLI, Antigravity CLI (Gemini), or any AI CLI that can run commands</td></tr>
+        <tr><th>Planning</th><td>Any backend and model set for lead, read-only, <code>delegate.py plan</code></td><td>That AI</td></tr>
         <tr><th>Edits, tests, git</th><td>Claude follows the plan and verifies each step; stops and tells you when the plan does not match the code</td><td>That AI</td></tr>
         <tr><th>Helpers</th><td>agy, codex, hermes</td><td>agy, hermes, claude (read-only)</td></tr>
         <tr><th>Setup</th><td><code>delegate.py set lead codex</code> or <code>/ai-delegates:setup</code></td><td>Copy <code>templates/AGENTS.md</code> into the project</td></tr>
@@ -282,85 +283,116 @@ const T = (zh, en) => (LANG === "en" ? en : zh);
 
 // 後端:名稱、顯示、顏色、是否可用(依這台實測)
 const BACKENDS = {
-  claude: { label: "Claude", sub: () => "claude", color: "--claude" },
-  agy: { label: "Gemini", sub: () => "agy", color: "--gemini" },
-  codex: { label: "GPT", sub: () => "codex", color: "--gpt" },
-  hermes: { label: "Hermes", sub: () => T("hermes(停用)", "hermes (disabled)"), color: "--hermes", off: true },
+  claude: { label: "Claude", sub: () => "claude", color: "--claude", models: ["opus", "sonnet", "haiku"] },
+  agy: { label: "Gemini", sub: () => "agy", color: "--gemini",
+         models: ["gemini-4-argon-high", "gemini-3.8-flash-medium", "claude-opus-5-5-high", "gpt-oss-120b-medium"] },
+  codex: { label: "GPT", sub: () => "codex", color: "--gpt", models: ["gpt-5"], template: true },
+  hermes: { label: "Hermes", sub: () => T("hermes(停用)", "hermes (disabled)"), color: "--hermes", off: true, models: [] },
+  custom: { label: "my-ai", sub: () => T("自訂 my-ai.json", "your my-ai.json"), color: "--custom", models: [] },
+};
+// 在哪個 CLI 工作:它就是主控(Claude Code 以外是做法 B)
+const WS = {
+  claude: { name: "Claude Code", color: "--claude" },
+  codex: { name: "Codex CLI", color: "--gpt" },
+  agy: { name: "Antigravity CLI", color: "--gemini" },
 };
 const $ = (id) => document.getElementById(id);
 
 // 節點位置(viewBox 640×400)
 const POS = {
   user: [70, 70], ws: [70, 230], router: [300, 150], files: [300, 330],
-  claude: [540, 50], agy: [540, 145], codex: [540, 240], hermes: [540, 335],
+  claude: [540, 40], agy: [540, 120], codex: [540, 200], hermes: [540, 280], custom: [540, 360],
 };
 
 function fillSelects() {
   const ws = $("ws").value;
+  const name = (k) => (k === "custom" ? T("my-ai(你自己加的後端)", "my-ai (a backend you add)") : `${k} (${BACKENDS[k].label})`);
   const opts = (role) => {
-    const list = role === "lead" ? ["claude", "agy", "codex"] : ["auto", "agy", "codex", "claude", "hermes"];
-    return list.map((k) => `<option value="${k}">${k === "auto" ? T("auto(依 priority → agy)", "auto (by priority → agy)") : `${k} (${BACKENDS[k].label})`}</option>`).join("");
+    const list = role === "lead" ? ["claude", "agy", "codex", "hermes", "custom"] : ["auto", "agy", "codex", "claude", "hermes", "custom"];
+    return list.map((k) => `<option value="${k}">${k === "auto" ? T("auto(依 priority → agy)", "auto (by priority → agy)") : name(k)}</option>`).join("");
   };
   for (const r of ["lead", "search", "review"]) {
     const keep = $(r).value;
     $(r).innerHTML = opts(r);
     if ([...$(r).options].some((o) => o.value === keep)) $(r).value = keep;
   }
-  // 在 Codex CLI 工作時,主控就是 GPT 自己(做法 B)
-  $("lead").disabled = ws === "codex";
-  if (ws === "codex") $("lead").value = "codex";
+  // 不在 Claude Code 裡:那個 CLI 自己就是主控(做法 B),模型在那個 CLI 裡選
+  $("lead").disabled = ws !== "claude";
+  if (ws !== "claude") $("lead").value = ws;
   else if (!$("lead").value) $("lead").value = "claude";
+  const keepModel = $("leadModel").value;
+  // lead 是 claude 時就是正在執行的 Claude Code,模型在 Claude Code 裡選
+  const own = ws === "claude" && $("lead").value === "claude";
+  const models = ws === "claude" && !own ? BACKENDS[$("lead").value].models : [];
+  $("leadModel").innerHTML = [`<option value="">${ws === "claude" && !own ? T("後端預設", "backend default") : T(`在 ${WS[ws].name} 裡選`, `chosen in ${WS[ws].name}`)}</option>`,
+    ...models.map((m) => `<option value="${m}">${m}</option>`)].join("");
+  $("leadModel").disabled = ws !== "claude" || own || $("lead").value === "hermes";
+  if (models.includes(keepModel)) $("leadModel").value = keepModel;
 }
 
 function setup() {
   const ws = $("ws").value;
-  const self = ws === "claude" ? "claude" : "codex";
   const pick = (r) => ($(r).value === "auto" ? "agy" : $(r).value);
-  return { ws, self, lead: $("lead").value, search: pick("search"), review: pick("review"),
+  return { ws, lead: $("lead").value, leadModel: $("leadModel").value, search: pick("search"), review: pick("review"),
            searchAuto: $("search").value === "auto", reviewAuto: $("review").value === "auto" };
 }
 
+// 有指定模型就寫「後端 / 模型」:agy 也能跑 Claude、GPT-OSS 等模型,只寫 Gemini 會誤導
+const leadName = (s) => (s.leadModel ? `${s.lead} / ${s.leadModel}` : BACKENDS[s.lead].label);
+
 function modeLine(s) {
-  const wsName = s.ws === "claude" ? "Claude Code" : "Codex CLI";
+  const wsName = WS[s.ws].name;
   let mode;
-  if (s.ws === "codex") mode = T(`<span class="pill">做法 B</span> GPT 在自己的 CLI 當真正的主控,自己改檔;副手可以是 Claude`,
-    `<span class="pill">Mode B</span> GPT is the real lead in its own CLI and edits files itself; Claude can be a helper`);
+  if (s.ws !== "claude") mode = T(`<span class="pill">做法 B</span> ${BACKENDS[s.ws].label} 在自己的 CLI 當真正的主控(放 templates/AGENTS.md),自己改檔;任何能執行指令的 AI CLI 都可以這樣用`,
+    `<span class="pill">Mode B</span> ${BACKENDS[s.ws].label} is the real lead in its own CLI (with templates/AGENTS.md) and edits files itself; any AI CLI that can run commands works this way`);
   else if (s.lead === "claude") mode = T(`<span class="pill">預設</span> Claude 自己規劃、自己改檔`, `<span class="pill">Default</span> Claude plans and edits itself`);
-  else mode = T(`<span class="pill">做法 A</span> ${BACKENDS[s.lead].label} 唯讀規劃,Claude 照計畫改檔並驗證`,
-    `<span class="pill">Mode A</span> ${BACKENDS[s.lead].label} plans read-only; Claude follows the plan, edits and verifies`);
-  const warn = [s.search, s.review].includes("hermes")
-    ? ` <span class="pill warn">${T("hermes 是停用的範本:set 會直接擋下", "hermes is a disabled template: set refuses it")}</span>` : "";
-  $("mode").innerHTML = `${T(`在 ${wsName} 工作`, `Working in ${wsName}`)} · ${mode}${warn}`;
+  else if (BACKENDS[s.lead].off) mode = T(`<span class="pill warn">lead 不能用</span> ${s.lead} 已停用,Claude 會請你改設定或改由它自己規劃`,
+    `<span class="pill warn">lead unusable</span> ${s.lead} is disabled; Claude asks you to change it or plans by itself`);
+  else {
+    const who = leadName(s);
+    mode = T(`<span class="pill">做法 A</span> ${who} 唯讀規劃,Claude 照計畫改檔並驗證`, `<span class="pill">Mode A</span> ${who} plans read-only; Claude follows the plan, edits and verifies`);
+  }
+  const used = s.ws === "claude" ? [s.lead, s.search, s.review] : [s.search, s.review];
+  const pills = [];
+  if (s.ws === "claude") pills.push(`<span class="pill">${T("任何後端 × 任何模型:set lead &lt;後端&gt; --model &lt;模型&gt;", "Any backend × any model: set lead &lt;backend&gt; --model &lt;model&gt;")}</span>`);
+  if (used.includes("hermes")) pills.push(`<span class="pill warn">${T("hermes 是停用的範本:set 會直接擋下", "hermes is a disabled template: set refuses it")}</span>`);
+  if (used.includes("codex")) pills.push(`<span class="pill warn">${T("codex 預設是停用的範本:裝好 Codex CLI 後在 codex.json 把 enabled 改成 true", "codex ships disabled: after installing Codex CLI, set enabled to true in codex.json")}</span>`);
+  if (used.includes("custom")) pills.push(`<span class="pill">${T("my-ai:在 backends/ 加一個 JSON 檔就能用,不用改程式", "my-ai: add one JSON file to backends/, no code changes")}</span>`);
+  $("mode").innerHTML = `${T(`在 ${wsName} 工作`, `Working in ${wsName}`)} · ${mode} ${pills.join(" ")}`;
 }
 
 // 依設定產生步驟:每步 = 從哪到哪、封包標籤、終端機行、說明
 function buildSteps(s) {
   const steps = [];
-  const wsLabel = s.ws === "claude" ? "Claude Code" : "Codex CLI";
+  const wsLabel = WS[s.ws].name;
+  const disabled = (role, b) => ({ path: ["ws", "router"], label: `route ${role}`, hot: ["ws", "router"],
+    term: [["cmd", `delegate.py route ${role}`], ["warn", T(`角色 ${role} 設定的後端 ${b} 已停用(範本,尚未啟用)`, `role ${role}: backend ${b} is disabled (template, not enabled)`)]],
+    title: T(`${role}:設定的後端不能用`, `${role}: the configured backend is unusable`),
+    text: role === "lead"
+      ? T(`執行器直接報錯,不會偷偷換別的後端。Claude 把訊息轉告你,問你要改設定還是這次由它自己規劃。`,
+        `The runner reports an error instead of silently switching backends. Claude tells you and asks whether to change the setting or plan by itself this time.`)
+      : T(`執行器直接報錯,不會偷偷換別的後端。主控把訊息轉告你,請你執行 setup 改設定;這次改用自己的搜尋。`,
+        `The runner reports an error instead of silently switching backends. The lead passes it on and asks you to run setup; this time it searches by itself.`) });
+
   const helperStep = (role, b, auto, q, ans) => {
-    if (b === "hermes") {
-      steps.push({ path: ["ws", "router"], label: `route ${role}`, hot: ["ws", "router"],
-        term: [["cmd", `delegate.py route ${role}`], ["warn", T(`角色 ${role} 設定的後端 hermes 已停用(範本,尚未啟用)`, `role ${role}: backend hermes is disabled (template, not enabled)`)]],
-        title: T(`${role}:設定的後端不能用`, `${role}: the configured backend is unusable`),
-        text: T(`執行器直接報錯,不會偷偷換別的後端。主控把訊息轉告你,請你執行 setup 改設定;這次改用自己的搜尋。`,
-          `The runner reports an error instead of silently switching backends. The lead passes it on and asks you to run setup; this time it searches by itself.`) });
-      return;
-    }
-    if (b === s.self) {
+    if (BACKENDS[b].off) { steps.push(disabled(role, b)); return; }
+    // 只有在 Claude Code 裡、角色設成 claude 時,才由它自己的子代理處理
+    if (b === "claude" && s.ws === "claude") {
       steps.push({ path: ["ws", "router", "ws"], label: `route ${role}`, hot: ["ws", "router"],
-        term: [["cmd", `delegate.py route ${role}`], ["dim", `{"role": "${role}", "backend": "${b}", "self": true}`],
-               ["ok", T(`→ 就是主控自己:用內建子代理${s.ws === "claude" ? "(Explore)" : ""}處理`, `→ That is the lead itself: use its built-in subagent${s.ws === "claude" ? " (Explore)" : ""}`)]],
+        term: [["cmd", `delegate.py route ${role}`], ["dim", `{"role": "${role}", "backend": "claude", "self": true}`],
+               ["ok", T("→ 就是主控自己:用內建子代理(Explore)處理", "→ That is the lead itself: use its built-in subagent (Explore)")]],
         title: T(`${role}:交給主控自己`, `${role}: handled by the lead itself`),
-        text: T(`這個角色設定成 ${b},而你正在 ${wsLabel} 裡,所以不另外開一個 ${b},直接用它自己的子代理。`,
-          `This role is set to ${b} and you are already in ${wsLabel}, so no second ${b} is started; its own subagent does it.`) });
+        text: T(`這個角色設定成 claude,而你正在 Claude Code 裡,所以不另外開一個 claude,直接用它自己的子代理。`,
+          `This role is set to claude and you are already in Claude Code, so no second claude is started; its own subagent does it.`) });
       return;
     }
+    const same = b === s.ws;
     steps.push({ path: ["ws", "router", b, "router", "ws"], label: `ask ${role}`, hot: ["ws", "router", b],
       term: [["cmd", `delegate.py route ${role}`], ["dim", `{"role": "${role}", "backend": "${b}", "self": false${auto ? T(', "source": "預設(auto)"', ', "source": "default (auto)"') : ""}}`],
              ["cmd", `delegate.py ask ${role} "${q}" .`], ...ans.map((a) => ["ok", a]), ["dim", T(`[${b} 成功,約 1~5 分鐘]`, `[${b} ok, about 1–5 min]`)]],
       title: T(`${role}:派給 ${BACKENDS[b].label}(唯讀)`, `${role}: delegated to ${BACKENDS[b].label} (read-only)`),
-      text: T(`${BACKENDS[b].label} 自己讀檔、搜尋,但不能寫檔或執行指令。回報的是線索:${wsLabel} 會打開它列的「檔案:行號」確認後才採用。`,
-        `${BACKENDS[b].label} reads and searches files itself but cannot write files or run commands. Its report is a lead, not a fact: ${wsLabel} opens each file:line it lists and confirms before using it.`) });
+      text: T(`${same ? `另外開一個唯讀的 ${b},不是正在執行的這個。` : ""}${BACKENDS[b].label} 自己讀檔、搜尋,但不能寫檔或執行指令。回報的是線索:${wsLabel} 會打開它列的「檔案:行號」確認後才採用。`,
+        `${same ? `A separate read-only ${b} is started, not the one you are in. ` : ""}${BACKENDS[b].label} reads and searches files itself but cannot write files or run commands. Its report is a lead, not a fact: ${wsLabel} opens each file:line it lists and confirms before using it.`) });
   };
 
   steps.push({ path: ["user", "ws"], label: T("需求", "request"), hot: ["user", "ws"],
@@ -368,21 +400,29 @@ function buildSteps(s) {
     title: T(`你在 ${wsLabel} 提出需求`, `You ask ${wsLabel}`),
     text: T(`需求先到你正在用的 CLI。它負責整件事,決定哪些部分要交給誰。`, `The request goes to the CLI you are using. It owns the whole task and decides what to hand to whom.`) });
 
-  if (s.lead === s.self) {
+  if (s.ws !== "claude") {
+    steps.push({ path: ["ws"], label: "", hot: ["ws"],
+      term: [["dim", T("# AGENTS.md:lead 就是你自己,不用派", "# AGENTS.md: lead is you, nothing to delegate")]],
+      title: T(`lead:${wsLabel} 自己就是主控`, `lead: ${wsLabel} is the lead`),
+      text: T(`在 ${wsLabel} 裡工作時,它自己理解需求、規劃、改檔。模型在 ${wsLabel} 裡選。`, `When you work in ${wsLabel}, it understands the request, plans and edits by itself. Its model is chosen inside ${wsLabel}.`) });
+  } else if (s.lead === "claude") {
     steps.push({ path: ["ws", "router", "ws"], label: "route lead", hot: ["ws", "router"],
-      term: [["cmd", "delegate.py route lead"], ["dim", `{"role": "lead", "backend": "${s.lead}", "self": true}`], ["ok", T("→ 主控就是自己,直接規劃", "→ The lead is itself; it plans directly")]],
+      term: [["cmd", "delegate.py route lead"], ["dim", `{"role": "lead", "backend": "claude", "self": true}`], ["ok", T("→ 主控就是自己,直接規劃", "→ The lead is itself; it plans directly")]],
       title: T("lead:主控就是自己", "lead: the lead is itself"),
-      text: T(`lead 設定成 ${s.lead},也就是正在執行的 ${wsLabel},不需要 plan。`, `lead is set to ${s.lead}, the ${wsLabel} already running, so no plan call is needed.`) });
+      text: T(`lead 設定成 claude,也就是正在執行的 Claude Code,不需要 plan。`, `lead is set to claude, the Claude Code already running, so no plan call is needed.`) });
+  } else if (BACKENDS[s.lead].off) {
+    steps.push(disabled("lead", s.lead));
   } else {
+    const who = leadName(s);
     steps.push({ path: ["ws", "router", s.lead, "router", "ws"], label: "plan", hot: ["ws", "router", s.lead],
-      term: [["cmd", "delegate.py route lead"], ["dim", `{"role": "lead", "backend": "${s.lead}", "self": false}`],
+      term: [["cmd", "delegate.py route lead"], ["dim", `{"role": "lead", "backend": "${s.lead === "custom" ? "my-ai" : s.lead}", "model": ${s.leadModel ? `"${s.leadModel}"` : "null"}, "self": false}`],
              ["cmd", T(`delegate.py plan "total() 要改成忽略 None 的項目" .`, `delegate.py plan "make total() skip None items" .`)],
              ["ok", T("## 要改的位置", "## Where to change")], ["ok", T("- calc.py:7-8 — 加入 if i is None: continue", "- calc.py:7-8 — add: if i is None: continue")],
              ["ok", T("## 步驟", "## Steps")], ["ok", T("1. 驗證:total([1, None, 2, 3]) == 6", "1. Verify: total([1, None, 2, 3]) == 6")],
              ["ok", T("## 需要使用者決定的事", "## Decisions for you")], ["ok", T("- 無", "- None")]],
-      title: T(`lead:請 ${BACKENDS[s.lead].label} 唯讀規劃`, `lead: ${BACKENDS[s.lead].label} plans read-only`),
-      text: T(`${BACKENDS[s.lead].label} 看程式後回傳要改哪裡、步驟、每步怎麼驗證、需要你決定的事。它沒有寫檔權限;有「需要你決定的事」時,Claude 會先問你。`,
-        `${BACKENDS[s.lead].label} reads the code and returns where to change, the steps, how to verify each one, and anything you must decide. It cannot write files; if there is a decision for you, Claude asks first.`) });
+      title: T(`lead:請 ${who} 唯讀規劃`, `lead: ${who} plans read-only`),
+      text: T(`${who} 看程式後回傳要改哪裡、步驟、每步怎麼驗證、需要你決定的事。它沒有寫檔權限;有「需要你決定的事」時,Claude 會先問你。`,
+        `${who} reads the code and returns where to change, the steps, how to verify each one, and anything you must decide. It cannot write files; if there is a decision for you, Claude asks first.`) });
   }
 
   helperStep("search", s.search, s.searchAuto, T("total 的所有呼叫點", "every caller of total"),
@@ -402,7 +442,10 @@ function buildSteps(s) {
     T(["## 不確定之處", "- items 全為 None 時回傳 0,符合預期"], ["## Uncertain", "- all-None items return 0, as expected"]));
 
   steps.push({ path: ["ws", "user"], label: T("回報", "report"), hot: ["ws", "user"],
-    term: [["cmd", "delegate.py log -n 3"], ["dim", `- lead｜${s.lead}｜${T("成功", "ok")}`], ["dim", `- search｜${s.search}｜${T("成功", "ok")}`], ["dim", `- review｜${s.review}｜${T("成功", "ok")}`]],
+    term: [["cmd", "delegate.py log -n 3"],
+           ...[["lead", s.ws === "claude" && s.lead !== "claude" ? s.lead : null], ["search", s.search], ["review", s.review]]
+             .filter(([, b]) => b && !BACKENDS[b].off && !(b === "claude" && s.ws === "claude"))
+             .map(([r, b]) => ["dim", `- ${r}｜${b === "custom" ? "my-ai" : b}｜${T("成功", "ok")}`])],
     title: T("回報你,並留下紀錄", "Reports back and logs the runs"),
     text: T(`回報時分清楚哪些是主控或副手查的、哪些已親自確認。每次派工都記在 ~/.ai-delegates/runs.jsonl。`,
       `The report separates what the lead or helpers found from what was confirmed first-hand. Every delegation is logged in ~/.ai-delegates/runs.jsonl.`) });
@@ -417,14 +460,13 @@ function el(tag, attrs, parent = svg) { const e = document.createElementNS(NS, t
 function draw(s) {
   svg.innerHTML = "";
   svg.setAttribute("aria-label", T("派工流程圖", "Delegation flow diagram"));
-  const wsColor = s.ws === "claude" ? "--claude" : "--gpt";
   const nodes = {
     user: { t: T("使用者", "You"), sub: T("提出需求", "make a request"), w: 110 },
-    ws: { t: s.ws === "claude" ? "Claude Code" : "Codex CLI", sub: T("改檔·測試·git", "edit·test·git"), w: 120, color: wsColor },
+    ws: { t: WS[s.ws].name, sub: T("改檔·測試·git", "edit·test·git"), w: 124, color: WS[s.ws].color },
     router: { t: "delegate.py", sub: "route / ask / plan", w: 132 },
     files: { t: T("專案檔案", "Project files"), sub: "calc.py · main.py", w: 132 },
   };
-  for (const k of ["claude", "agy", "codex", "hermes"]) {
+  for (const k of Object.keys(BACKENDS)) {
     const b = BACKENDS[k];
     const roles = [];
     if (s.lead === k && s.ws === "claude" && k !== "claude") roles.push("lead");
@@ -432,7 +474,7 @@ function draw(s) {
     if (s.review === k) roles.push("review");
     nodes[k] = { t: b.label, sub: b.sub(), w: 112, color: b.color, roles, off: b.off };
   }
-  const edges = [["user", "ws"], ["ws", "router"], ["ws", "files"], ["router", "claude"], ["router", "agy"], ["router", "codex"], ["router", "hermes"]];
+  const edges = [["user", "ws"], ["ws", "router"], ["ws", "files"], ["router", "claude"], ["router", "agy"], ["router", "codex"], ["router", "hermes"], ["router", "custom"]];
   const g = el("g", {});
   for (const [a, b] of edges) {
     el("line", { x1: POS[a][0], y1: POS[a][1], x2: POS[b][0], y2: POS[b][1], class: "edge", "data-e": `${a}-${b}` }, g);
@@ -525,8 +567,8 @@ function resetAll() {
   $("stepNo").textContent = T("準備", "Ready"); $("stepTitle").textContent = T("選好角色後按播放", "Pick the roles, then press play");
   $("stepText").textContent = T("範例需求:「total() 要改成忽略 None 的項目」。專案裡有 calc.py 和 main.py。",
     "Example request: \"make total() skip None items\". The project has calc.py and main.py.");
-  writeTerm([["dim", T(`# ${S.ws === "claude" ? "Claude Code" : "Codex CLI"} 的終端機`, `# ${S.ws === "claude" ? "Claude Code" : "Codex CLI"} terminal`)], ["cmd", "delegate.py show"],
-    ["dim", `- lead    ${S.lead}`], ["dim", `- search  ${$("search").value}`], ["dim", `- review  ${$("review").value}`]], false);
+  writeTerm([["dim", T(`# ${WS[S.ws].name} 的終端機`, `# ${WS[S.ws].name} terminal`)], ["cmd", "delegate.py show"],
+    ["dim", `- lead    ${S.lead === "custom" ? "my-ai" : S.lead}${S.leadModel ? ` / ${S.leadModel}` : ""}`], ["dim", `- search  ${$("search").value}`], ["dim", `- review  ${$("review").value}`]], false);
 }
 
 function setLang(l) {
@@ -548,12 +590,13 @@ $("play").addEventListener("click", () => {
 });
 $("next").addEventListener("click", () => { playing = false; $("play").textContent = RESUME(); if (idx < STEPS.length - 1) show(idx + 1); });
 $("reset").addEventListener("click", resetAll);
-for (const id of ["ws", "lead", "search", "review"]) $(id).addEventListener("change", resetAll);
+for (const id of ["ws", "lead", "leadModel", "search", "review"]) $(id).addEventListener("change", resetAll);
 document.querySelectorAll("[data-set-lang]").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.setLang)));
 addEventListener("hashchange", () => LANGS.includes(location.hash.slice(1)) && setLang(location.hash.slice(1)));
 
-// 預設展示做法 A:Claude Code 工作、Gemini 規劃、search 自動、review 交給 GPT
+// 預設展示做法 A:Claude Code 工作、Gemini(gemini-3.8-flash-medium)規劃、search 自動、review 交給 GPT
 fillSelects();
 $("lead").value = "agy"; $("search").value = "auto"; $("review").value = "codex";
+fillSelects(); $("leadModel").value = "gemini-3.8-flash-medium";
 setLang(LANG);
 </script>
