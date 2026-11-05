@@ -29,7 +29,7 @@ find ~/.claude/plugins -name delegate.py -path '*ai-delegates*'
 
 ### Animated demo
 
-`docs/demo.html` shows how a request travels between the lead, `delegate.py` and each AI. Download it and open it in a browser (no install needed; it fetches fonts from Google Fonts when online).
+**[▶ Open the animated demo](https://code09128.github.io/ai-delegates/docs/demo.html)**. It shows how a request travels between the lead, `delegate.py` and each AI. To view it offline, open `docs/demo.html` in a browser.
 
 1. Choose **where you work** (Claude Code, or another AI's CLI such as Codex), then the AI for `lead`, `search` and `review`.
 2. Press **▶ 播放** (play). The left side animates each hand-off; the terminal on the right shows the matching command and reply.
